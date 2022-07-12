@@ -1,4 +1,4 @@
-import { DataTypes, Model } from "sequelize/types";
+import { DataTypes, Model } from "sequelize";
 import { mysql } from '.';
 
 class User extends Model {
@@ -25,6 +25,6 @@ User.init({
      }
 }, {
     sequelize: mysql,
-    tableName: 'users'
+    tableName: 'User'
 })
 export default User;

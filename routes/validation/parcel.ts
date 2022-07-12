@@ -13,3 +13,42 @@ export const ParcelQuerySchema: Schema = {
 export const ParcelRetrieveSchema: Schema = {
     ...RetrieveQuerySchema
 }
+
+export const ParcelCreateSchema: Schema = {
+    id: {
+        in: ['body'],
+        optional: { options: { nullable: true }}
+    },
+    image: {
+        in: ['body'],
+        optional: { options: { nullable: true }}
+    },
+    address: {
+        in: ['body'],
+        optional: { options: { nullable: true }}
+    },
+    square: {
+        in: ['body'],
+        optional: { options: { nullable: true }}
+    },
+    price: {
+        in: ['body'],
+        optional: { options: { nullable: true }}
+    },
+    ownerAddress: {
+        in: ['body'],
+        optional: { options: { nullable: true }}
+    },
+    contractAddress: {
+        in: ['body'],
+        optional: { options: { nullable: true }}
+    },
+    tokenId: {
+        in: ['body'],
+        optional: { options: { nullable: true }}
+    },
+    onSale: {
+        in: ['body'],
+        optional: { options: { nullable: true }}
+    },
+}

@@ -1,7 +1,7 @@
-import { DataTypes, Model } from "sequelize/types";
+import { DataTypes, Model } from "sequelize";
 import { mysql } from '.';
 
-class Parcel extends Model {
+class Parcel extends Model{
     public id: string;
     public image: string;
     public address: string;
@@ -44,6 +44,6 @@ Parcel.init({
     }
 }, {
     sequelize: mysql,
-    tableName: 'parcels'
+    tableName: 'Parcel'
 })
 export default Parcel;
