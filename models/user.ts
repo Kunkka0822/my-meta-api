@@ -5,6 +5,7 @@ class User extends Model {
     public id ? : number;
     public wallet ? : string;
     public email ? : string;
+    public name ? : string;
     public password ? : string;
 }
 
@@ -18,6 +19,9 @@ User.init({
         type: DataTypes.STRING
      },
      name: {
+        type: DataTypes.STRING
+     },
+     email: {
         type: DataTypes.STRING
      },
      password: {
