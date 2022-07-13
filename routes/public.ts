@@ -1,7 +1,7 @@
 import { Route } from ".";
 import { ParcelController } from "../controller/parcel.controller";
 import validate from "../middleware/validate"
-import { ParcelQuerySchema } from "./validation/parcel";
+import { ParcelQuerySchema, ParcelRetrieveSchema } from "./validation/parcel";
 
 const parcelController = new ParcelController;
 const routes: Route[] = [
@@ -11,6 +11,12 @@ const routes: Route[] = [
         path: '/api/parcels',
         middleware: [validate(ParcelQuerySchema)],
         handler: parcelController.get
+    }, {
+        name: 'Retrieve parcel',
+        method: 'get',
+        path: '/api/parcels/:id',
+        middleware: [validate(ParcelRetrieveSchema)],
+        handler: parcelController.retrieve
     }
 ]
 export default routes;
