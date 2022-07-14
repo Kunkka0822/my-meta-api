@@ -2,7 +2,7 @@ import Parcel from "../../models/parcel";
 import { PagerQuery } from "./common.types";
 
 export interface ParcelRequest {
-    id: string;
+    handleId: string;
     image: string;
     address: string;
     square: number;

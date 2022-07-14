@@ -15,7 +15,7 @@ export const ParcelRetrieveSchema: Schema = {
 }
 
 export const ParcelCreateSchema: Schema = {
-    id: {
+    handleId: {
         in: ['body'],
         optional: { options: { nullable: true }}
     },

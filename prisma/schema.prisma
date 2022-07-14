@@ -11,18 +11,19 @@ datasource db {
 }
 
 model Parcel {
-  id String @id
+  id BigInt @id @default(autoincrement())
+  handleId String
   image String?
   address String?
   square Float
-  price Decimal
+  price Int?
   ownerAddress  String
   contractAddress String
   tokenId String
   onSale  Boolean
 }
 model User {
-  id BigInt @id
+  id BigInt @id @default(autoincrement())
   wallet String
   name String
   email String

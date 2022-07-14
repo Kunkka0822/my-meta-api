@@ -1,7 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import { mysql } from '.';
 
-class Parcel extends Model{
+class Parcel extends Model {
     public id: string;
     public image: string;
     public address: string;
@@ -15,8 +15,11 @@ class Parcel extends Model{
 
 Parcel.init({
     id: {
-        type: DataTypes.STRING,
+        type: DataTypes.BIGINT,
         primaryKey: true
+    },
+    handleId: {
+        type: DataTypes.STRING,
     },
     image: {
         type: DataTypes.STRING,

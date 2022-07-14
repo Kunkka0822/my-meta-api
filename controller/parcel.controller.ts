@@ -13,6 +13,14 @@ export class ParcelController {
             throw new ControllerError('Not Found', 404);
         return parcel;
     }
+    async retrieveByHandle(req: Request) {
+        const id = req.params.id;
+        const parcel = await Parcel.findOne({ where: { handleId: id } });
+        if (parcel === null) 
+            throw new ControllerError('Not Found', 404);
+        return parcel;
+    }
+    
     async get(req: Request) {
         const { page, size } = sanitizePager(req.query as ParcelQuery);
         const parcels = await Parcel.findAll({

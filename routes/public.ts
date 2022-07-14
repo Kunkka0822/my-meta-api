@@ -17,6 +17,12 @@ const routes: Route[] = [
         path: '/api/parcels/:id',
         middleware: [validate(ParcelRetrieveSchema)],
         handler: parcelController.retrieve
+    }, {
+        name: 'Retrieve parcel By handle',
+        method: 'get',
+        path: '/api/parcel_by_handle/:id',
+        middleware: [validate(ParcelRetrieveSchema)],
+        handler: parcelController.retrieveByHandle
     }
 ]
 export default routes;
