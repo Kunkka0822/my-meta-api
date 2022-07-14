@@ -1,7 +1,7 @@
 import { Request } from "express";
 import { ControllerError } from "../lib/exceptions/controller_exception";
 import { sanitizePager } from "../lib/helpers/utils";
-import { ParcelQuery } from "../lib/types/parcel.types";
+import { ParcelQuery, ParcelsByHandleQuery } from "../lib/types/parcel.types";
 import Parcel from "../models/parcel";
 
 export class ParcelController {
@@ -20,7 +20,16 @@ export class ParcelController {
             throw new ControllerError('Not Found', 404);
         return parcel;
     }
-    
+    async getByHandle(req: Request) {
+        const queryData = req.query as unknown as ParcelsByHandleQuery;
+        const { handleIds } = queryData;
+        const parcels = Parcel.findAll({
+            where: {
+                handleId: { $in: handleIds }
+            }
+        })
+        return parcels;
+    }
     async get(req: Request) {
         const { page, size } = sanitizePager(req.query as ParcelQuery);
         const parcels = await Parcel.findAll({
@@ -29,5 +38,4 @@ export class ParcelController {
         })
         return parcels;
     }
-    
 }

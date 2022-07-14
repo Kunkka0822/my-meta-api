@@ -13,4 +13,8 @@ export interface ParcelRequest {
     onSale: boolean;
 }
 
+export interface ParcelsByHandleQuery {
+    handleIds: string[]
+}
+
 export interface ParcelQuery extends PagerQuery {}

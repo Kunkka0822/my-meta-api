@@ -14,6 +14,13 @@ export const ParcelRetrieveSchema: Schema = {
     ...RetrieveQuerySchema
 }
 
+export const ParcelsByHandleSchema: Schema = {
+    handleIds: {
+        in: ['query'],
+        isArray: true,
+    },
+}
+
 export const ParcelCreateSchema: Schema = {
     handleId: {
         in: ['body'],
