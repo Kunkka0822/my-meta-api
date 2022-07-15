@@ -3,6 +3,7 @@ import { mysql } from '.';
 
 class Parcel extends Model {
     public id: string;
+    public handleId: string;
     public image: string;
     public address: string;
     public square: number;

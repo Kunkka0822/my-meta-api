@@ -1,11 +1,9 @@
 import * as bodyParser from "body-parser";
 const path = require('path');
-import * as express from "express";
-import swaggerUi = require('swagger-ui-express');
+import express from "express";
 import routes from "./routes/index";
 import { ControllerError } from "./lib/exceptions/controller_exception";
-import fileUpload = require("express-fileupload");
-import * as cors from 'cors';
+import cors from 'cors';
 
 class App {
 
@@ -22,7 +20,6 @@ class App {
         this.express.use(bodyParser.json());
         this.express.use(bodyParser.urlencoded({ extended: false }));
         this.express.use(express.static(path.join(__dirname, '../ui/build')));
-        this.express.use(fileUpload());
         this.express.use(cors());
     }
 

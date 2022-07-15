@@ -7,7 +7,7 @@
     "start": "ts-node index.ts",
     "dev": "nodemon",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "ENVIRONMENT=$ENVIRONMENT webpack",
+    "build": "tsc",
     "prod-build": "ENVIRONMENT='production' gulp"
   },
   "author": "",
