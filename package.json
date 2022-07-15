@@ -6,6 +6,7 @@
   "scripts": {
     "start": "ts-node index.ts",
     "dev": "nodemon",
+    "prod": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "prod-build": "ENVIRONMENT='production' gulp"

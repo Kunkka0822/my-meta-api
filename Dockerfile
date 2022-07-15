@@ -14,6 +14,8 @@ RUN npm install
 # Copy rest of the code to container
 COPY . .
 
+RUN npm run build
+
 EXPOSE 3080
 
 # Run the React app
