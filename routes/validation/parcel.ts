@@ -13,7 +13,15 @@ export const ParcelQuerySchema: Schema = {
 export const ParcelRetrieveSchema: Schema = {
     ...RetrieveQuerySchema
 }
-
+export const ParcelBoughtSchema: Schema = {
+    ...RetrieveQuerySchema,
+    ownerAddress: {
+        in: ['body']
+    },
+    tokenId: {
+        in: ['body']
+    }
+}
 export const ParcelsByHandleSchema: Schema = {
     handleIds: {
         in: ['query'],

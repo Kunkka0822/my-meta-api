@@ -1,7 +1,7 @@
 import { Request } from "express";
 import { ControllerError } from "../lib/exceptions/controller_exception";
 import { sanitizePager } from "../lib/helpers/utils";
-import { ParcelQuery, ParcelsByHandleQuery } from "../lib/types/parcel.types";
+import { ParcelBoughtRequest, ParcelQuery, ParcelsByHandleQuery } from "../lib/types/parcel.types";
 import Parcel from "../models/parcel";
 
 export class ParcelController {
@@ -37,5 +37,19 @@ export class ParcelController {
             offset: (page - 1) * size
         })
         return parcels;
+    }
+    async buy(req: Request) {
+        const id = req.params.id;
+        const data = req.body as ParcelBoughtRequest;
+        const parcel = await Parcel.findOne({ where: { id } });
+        if (parcel === null) 
+            throw new ControllerError('Not Found', 404);
+        // TODO check if it's real from subgraph
+        parcel.set({
+            ownerAddress: data.ownerAddress,
+            tokenId: data.tokenId
+        })
+        await parcel.save();
+        return parcel;
     }
 }

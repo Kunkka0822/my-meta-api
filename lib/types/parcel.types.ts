@@ -17,4 +17,8 @@ export interface ParcelsByHandleQuery {
     handleIds: string[]
 }
 
+export interface ParcelBoughtRequest {
+    ownerAddress: string,
+    tokenId: string
+}
 export interface ParcelQuery extends PagerQuery {}

@@ -1,7 +1,7 @@
 import { Route } from ".";
 import { ParcelController } from "../controller/parcel.controller";
 import validate from "../middleware/validate"
-import { ParcelQuerySchema, ParcelRetrieveSchema, ParcelsByHandleSchema } from "./validation/parcel";
+import { ParcelBoughtSchema, ParcelQuerySchema, ParcelRetrieveSchema, ParcelsByHandleSchema } from "./validation/parcel";
 
 const parcelController = new ParcelController;
 const routes: Route[] = [
@@ -29,6 +29,12 @@ const routes: Route[] = [
         path: '/api/parcel_by_handle',
         middleware: [validate(ParcelsByHandleSchema)],
         handler: parcelController.getByHandle
+    }, {
+        name: 'Parcel bought update',
+        method: 'put',
+        path: '/api/bought/parcels/:id',
+        middleware: [validate(ParcelBoughtSchema)],
+        handler: parcelController.buy
     }
 ]
 export default routes;
