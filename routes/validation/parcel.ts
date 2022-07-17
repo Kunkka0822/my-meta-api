@@ -17,9 +17,6 @@ export const ParcelBoughtSchema: Schema = {
     ...RetrieveQuerySchema,
     ownerAddress: {
         in: ['body']
-    },
-    tokenId: {
-        in: ['body']
     }
 }
 export const ParcelsByHandleSchema: Schema = {

@@ -46,8 +46,7 @@ export class ParcelController {
             throw new ControllerError('Not Found', 404);
         // TODO check if it's real from subgraph
         parcel.set({
-            ownerAddress: data.ownerAddress,
-            tokenId: data.tokenId
+            ownerAddress: data.ownerAddress
         })
         await parcel.save();
         return parcel;
