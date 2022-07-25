@@ -17,10 +17,10 @@ model Parcel {
   address String?
   square Float
   price Int?
-  ownerAddress  String
+  ownerAddress  String?
   owner User? @relation(fields: [ownerId], references: [id])
   ownerId BigInt?
-  contractAddress String
+  contractAddress String?
   tokenId String
   status PropertyStatus @default(UNMINTED)
 }
