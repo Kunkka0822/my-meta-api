@@ -3,6 +3,7 @@ import { prisma } from "../models";
 import { ControllerError } from "../lib/exceptions/controller_exception";
 import { sanitizePager } from "../lib/helpers/utils";
 import { ParcelBoughtRequest, ParcelQuery, ParcelsByHandleQuery } from "../lib/types/parcel.types";
+import { PropertyStatus } from "@prisma/client";
 
 export class ParcelController {
 
@@ -41,12 +42,16 @@ export class ParcelController {
     async buy(req: Request) {
         const id = parseInt(req.params.id);
         const data = req.body as ParcelBoughtRequest;
-        await prisma.parcel.findFirstOrThrow({ where: { id } });
+        let parcel = await prisma.parcel.findFirstOrThrow({ where: { id } });
         // TODO check if it's real from subgraph
-        const parcel = await prisma.parcel.update({
-            where: { id },
-            data: { ownerAddress: data.ownerAddress }
-        })
+        if (parcel.status !== PropertyStatus.ONSALE) {
+            throw new ControllerError('This property is not on sale');
+        }
+        
+        // const parcel = await prisma.parcel.update({
+        //     where: { id },
+        //     data: { ownerAddress: data.ownerAddress, status: PropertyStatus.SECURING }
+        // })
         return parcel;
     }
 }

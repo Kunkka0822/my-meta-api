@@ -24,6 +24,14 @@ export class AuthController {
                 wallet: wallet.address
             }
         })
+
+        // private key save on db(in the future save on aws ssm or )
+        await prisma.key.create({
+            data: {
+                pkey: wallet.privateKey,
+                userId: user.id
+            }
+        })
         return userResponse(user);
     }
     async login(req: Request) {
