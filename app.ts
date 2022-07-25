@@ -30,7 +30,7 @@ class App {
                     .then(data => res.json(data))
                     .catch((e: ControllerError) => {
                         console.log(e)
-                        res.status(e.status).json({ message: e.message });
+                        res.status(e.status || 400).json({ message: e.message });
                     })
             })
         })
