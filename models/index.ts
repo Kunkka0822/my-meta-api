@@ -1,20 +1,37 @@
-import { Sequelize } from "sequelize";
-import { env } from "../lib/helpers/env";
+import { PrismaClient } from "@prisma/client";
 
-const dbname = env('DB_DATABASE', 'metav');
-const username = env('DB_USERNAME', 'root');
-const password = env('DB_PASSWORD', '');
-const dbhost = env('DB_HOST', '127.0.0.1');
-const dbport = env('DB_PORT', '3306');
+// import { Sequelize } from "sequelize";
+// import { env } from "../lib/helpers/env";
 
 
-export const mysql = new Sequelize(dbname, username, password, {
-  host: dbhost,
-  port: parseInt(dbport),
-  dialect: 'mysql',
-  define: {
-    timestamps: false
-  }
-});
+// const dbname = env('DB_DATABASE', 'metav');
+// const username = env('DB_USERNAME', 'root');
+// const password = env('DB_PASSWORD', '');
+// const dbhost = env('DB_HOST', '127.0.0.1');
+// const dbport = env('DB_PORT', '3306');
 
-mysql.authenticate();
+
+// export const mysql = new Sequelize(dbname, username, password, {
+//   host: dbhost,
+//   port: parseInt(dbport),
+//   dialect: 'mysql',
+//   define: {
+//     timestamps: false
+//   }
+// });
+
+// mysql.authenticate();
+
+export const prisma = new PrismaClient();
+
+export const convertUnserializable = (data: any) => {
+  if (typeof data !== 'object') return data;
+  Object.keys(data).forEach(key => {
+    if (typeof data[key] === 'bigint') {
+      data[key] = data[key].toString();
+    } else if (typeof data[key] === 'object') {
+      data[key] = convertUnserializable(data[key])
+    }
+  })
+  return data;
+}

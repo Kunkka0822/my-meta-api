@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express"
-import userRoutes from './public';
+import publicRoutes from './public';
+import userRoutes from './user';
 import adminRoutes from './admin';
 
 export type Route = {
@@ -10,4 +11,4 @@ export type Route = {
     handler: (data: any) => Promise<any>
 }
 
-export default [...userRoutes, ...adminRoutes];
+export default [...publicRoutes, ...adminRoutes, ...userRoutes];

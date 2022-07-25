@@ -25,7 +25,11 @@ model Parcel {
 model User {
   id BigInt @id @default(autoincrement())
   wallet String
-  name String
+  username String
   email String
   password String
+}
+model Key {
+  id BigInt @id @default(autoincrement())
+  
 }

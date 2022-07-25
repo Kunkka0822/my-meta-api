@@ -1,34 +1,7 @@
-import { DataTypes, Model } from "sequelize";
-import { mysql } from '.';
+import { User } from "@prisma/client";
+import _ from "lodash";
+import { convertUnserializable } from ".";
 
-class User extends Model {
-    public id ? : number;
-    public wallet ? : string;
-    public email ? : string;
-    public name ? : string;
-    public password ? : string;
+export const userResponse = (user: User) => {
+    return _.omit(convertUnserializable(user), 'password')
 }
-
-User.init({
-    id: {
-        type: DataTypes.INTEGER.UNSIGNED,
-        autoIncrement: true,
-        primaryKey: true
-     },
-     wallet: {
-        type: DataTypes.STRING
-     },
-     name: {
-        type: DataTypes.STRING
-     },
-     email: {
-        type: DataTypes.STRING
-     },
-     password: {
-        type: DataTypes.STRING
-     }
-}, {
-    sequelize: mysql,
-    tableName: 'User'
-})
-export default User;

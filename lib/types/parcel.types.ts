@@ -1,4 +1,3 @@
-import Parcel from "../../models/parcel";
 import { PagerQuery } from "./common.types";
 
 export interface ParcelRequest {
