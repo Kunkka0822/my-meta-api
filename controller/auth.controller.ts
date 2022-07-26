@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { LoginRequest, RegisterRequest } from "../lib/types/user.types";
+import { AuthRequest, LoginRequest, RegisterRequest } from "../lib/types/user.types";
 import { ethers } from "ethers";
 import { convertUnserializable, prisma } from "../models";
 import { sign } from 'jsonwebtoken';
@@ -7,6 +7,8 @@ import { compareSync, hashSync } from "bcrypt";
 import { env } from "../lib/helpers/env";
 import { ControllerError } from "../lib/exceptions/controller_exception";
 import { userResponse } from "../models/user";
+import { generateToken } from "../lib/helpers/utils";
+import { addHoursToDate } from "../lib/helpers/date";
 
 export class AuthController {
     async register(req: Request) {
@@ -42,7 +44,21 @@ export class AuthController {
             }
         });
         if (!compareSync(data.password, user.password)) throw new ControllerError('Incorrect password', 404);
-        const token = sign({ id: Number(user.id) }, env('JWT_SECRET'), { expiresIn: '1000h'})
+        const token = sign({ id: Number(user.id) }, env('JWT_SECRET'), { expiresIn: '10 days'})
         return convertUnserializable({ user: userResponse(user), token });
+    }
+
+    async getTempHash(req: AuthRequest) {
+        const user = req.user;
+        console.log({ user })
+        const tempHash = await prisma.tempHash.create({
+            data: {
+                userId: user.id,
+                hash: generateToken(),
+                createdAt: new Date,
+                expiredAt: addHoursToDate(new Date, 1)
+            }
+        })
+        return { hash: tempHash.hash }
     }
 }

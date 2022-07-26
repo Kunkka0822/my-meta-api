@@ -21,7 +21,7 @@ model Parcel {
   owner User? @relation(fields: [ownerId], references: [id])
   ownerId BigInt?
   contractAddress String?
-  tokenId String
+  tokenId String?
   status PropertyStatus @default(UNMINTED)
 }
 enum PropertyStatus {
@@ -38,10 +38,20 @@ model User {
   password String
   key Key?
   parcels Parcel[]
+  tempHashes TempHash[]
 }
 model Key {
   id BigInt @id @default(autoincrement())
   user User @relation(fields: [userId], references: [id])
   userId BigInt @unique
   pkey String
+}
+
+model TempHash {
+  id BigInt @id @default(autoincrement())
+  user User @relation(fields: [userId], references: [id])
+  userId BigInt
+  hash String
+  expiredAt DateTime
+  createdAt DateTime
 }

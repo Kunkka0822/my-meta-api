@@ -6,6 +6,12 @@ import { ParcelBoughtRequest, ParcelQuery, ParcelsByHandleQuery } from "../lib/t
 import { PropertyStatus } from "@prisma/client";
 
 export class ParcelController {
+    private static instance: ParcelController
+    static getInstance(): ParcelController {
+        if (this.instance) return this.instance;
+        this.instance = new ParcelController
+        return this.instance;
+    }
 
     async retrieve(req: Request) {
         const id = parseInt(req.params.id);

@@ -1,6 +1,6 @@
 import { Route } from ".";
 import { ParcelController } from "../controller/admin/parcel.controller";
-import { authorize } from "../middleware/authorize";
+import { authorizeUser } from "../middleware/authorizeUser";
 import validate from "../middleware/validate";
 import { ParcelCreateSchema } from "./validation/parcel";
 
@@ -18,7 +18,8 @@ const routes: Route[] = [
 
 export default routes.map(route => {
     if (route.middleware) {
-        route.middleware.push(authorize());
+        // TODO change into authorizeAdmin
+        route.middleware.push(authorizeUser());
     }
     return route;
 })
