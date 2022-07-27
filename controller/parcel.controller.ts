@@ -33,6 +33,9 @@ export class ParcelController {
         const parcels = await prisma.parcel.findMany({
             where: {
                 handleId: { in: handleIds }
+            },
+            include: {
+                owner: true
             }
         })
         return parcels;
