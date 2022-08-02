@@ -9,6 +9,12 @@ export const LoginRequestSchema: Schema = {
         in: ['body']
     }
 }
+
+export const LoginHashRequestSchema: Schema = {
+    hash: {
+        in: ['body']
+    }
+}
 export const RegisterRequestSchema: Schema = {
     ...LoginRequestSchema,
     username: {

@@ -4,12 +4,14 @@ import { verify } from "jsonwebtoken";
 import { prisma } from "../models";
 import { env } from "../lib/helpers/env";
 import { AuthRequest } from "../lib/types/user.types";
+import { authorizeTempHash } from "./authorizeTempHash";
 
 export const authorizeUser = () => async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         let token = req.headers.authorization;
         if (!token) {
-            return res.status(401).json({ message: 'Invalid token' });
+            // return res.status(401).json({ message: 'Invalid token' });
+            return authorizeTempHash()(req, res, next);
         }
     
         if (token.toLowerCase().startsWith('bearer')) {

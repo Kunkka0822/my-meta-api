@@ -1,40 +1,27 @@
 import { Route } from ".";
 import { ParcelController } from "../controller/parcel.controller";
 import validate from "../middleware/validate"
-import { ParcelBoughtSchema, ParcelQuerySchema, ParcelRetrieveSchema, ParcelsByHandleSchema } from "./validation/parcel";
+import { ParcelQuerySchema, ParcelRetrieveSchema, ParcelsByHandleSchema } from "./validation/parcel";
 
-const parcelController = new ParcelController;
 const routes: Route[] = [
     {
         name: 'Parcel list',
         method: 'get',
         path: '/api/parcels',
         middleware: [validate(ParcelQuerySchema)],
-        handler: parcelController.get
+        handler: ParcelController.get
     }, {
         name: 'Retrieve parcel',
         method: 'get',
         path: '/api/parcels/:id',
         middleware: [validate(ParcelRetrieveSchema)],
-        handler: parcelController.retrieve
-    }, {
-        name: 'Retrieve parcel By handle',
-        method: 'get',
-        path: '/api/parcel_by_handle/:id',
-        middleware: [validate(ParcelRetrieveSchema)],
-        handler: parcelController.retrieveByHandle
+        handler: ParcelController.retrieve
     }, {
         name: 'List parcels By handle',
         method: 'get',
         path: '/api/parcel_by_handle',
         middleware: [validate(ParcelsByHandleSchema)],
-        handler: parcelController.getByHandle
-    }, {
-        name: 'Parcel bought update',
-        method: 'put',
-        path: '/api/bought/parcels/:id',
-        middleware: [validate(ParcelBoughtSchema)],
-        handler: parcelController.buy
+        handler: ParcelController.getByHandle
     }
 ]
 export default routes;

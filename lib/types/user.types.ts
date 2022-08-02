@@ -6,9 +6,11 @@ export interface LoginRequest {
     password: string
 }
 export interface RegisterRequest extends LoginRequest {
-    username: string
+    name: string
 }
 
 export interface AuthRequest extends Request {
     user: User
 }
+
+export interface UserData extends Partial<User> {}
