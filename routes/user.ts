@@ -25,11 +25,18 @@ const routes: Route[] = [
         handler: AuthController.login
     },
     {
-        name: 'Login',
+        name: 'Login with hash',
         method: 'post',
-        path: '/api/login-token',
+        path: '/api/signin-hash',
         middleware: [validate(LoginHashRequestSchema)],
         handler: AuthController.loginWithHash
+    },
+    {
+        name: 'Login on web',
+        method: 'post',
+        path: '/api/signin',
+        middleware: [validate(LoginRequestSchema)],
+        handler: AuthController.loginWithWeb
     },
     {
         name: 'Me',
@@ -37,6 +44,13 @@ const routes: Route[] = [
         path: '/api/me',
         middleware: [authorizeUser()],
         handler: AuthController.me
+    },
+    {
+        name: 'Me(Web)',
+        method: 'get',
+        path: '/api/metastore-session',
+        middleware: [authorizeUser()],
+        handler: AuthController.meWeb
     },
     {
         name: 'Me',

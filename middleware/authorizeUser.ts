@@ -10,8 +10,7 @@ export const authorizeUser = () => async (req: AuthRequest, res: Response, next:
     try {
         let token = req.headers.authorization;
         if (!token) {
-            // return res.status(401).json({ message: 'Invalid token' });
-            return authorizeTempHash()(req, res, next);
+            return res.status(401).json({ message: 'Invalid token' });
         }
     
         if (token.toLowerCase().startsWith('bearer')) {

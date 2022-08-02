@@ -6,7 +6,7 @@ import { sign } from 'jsonwebtoken';
 import { compareSync, hashSync } from "bcrypt";
 import { env } from "../lib/helpers/env";
 import { ControllerError } from "../lib/exceptions/controller_exception";
-import { sessionResponse, userResponse } from "../models/user";
+import { sessionResponse, userResponse, webSessionResponse } from "../models/user";
 import { generateToken } from "../lib/helpers/utils";
 import { addHoursToDate } from "../lib/helpers/date";
 import { TiliaService } from "../services/tilia.service";
@@ -106,14 +106,52 @@ export const AuthController = {
         }
         return convertUnserializable({ ...sessionResponse(user), token });
     },
-    loginWithHash: async (req: AuthRequest) => {
-        const user = req.user;
+    loginWithWeb: async (req: Request) => {
+        const data = req.body as LoginRequest;
+        const user = await prisma.user.findFirstOrThrow({
+            where: {
+                email: data.email
+            },
+            include: {
+                userOnline: true,
+                userSkin: true,
+                userTravel: true,
+            }
+        });
+        if (!compareSync(data.password, user.password)) throw new ControllerError('Incorrect password', 404);
+        const token = sign({ id: Number(user.id) }, env('JWT_SECRET'), { expiresIn: '100 days'})
+
+        if (!user.tiliaId) {
+            const tiliaId = await TiliaService.registerUser(user);
+            await UserEntityService.update(user, { tiliaId });
+        }
+        return {
+            session: webSessionResponse(user),
+            token,
+        };
+    },
+    loginWithHash: async (req: Request) => {
+        const now = new Date;
+        const hash = req.body.hash;
+        const tempHash = await prisma.tempHash.findFirst({ where: { hash, expiredAt: { gt: now } }, include: { user: true}});
+        if (!tempHash || tempHash.expiredAt < now) {
+            throw new ControllerError('Token is expired or invalid', 401);
+        }
+        await prisma.tempHash.update({
+            where: { id: tempHash.id },
+            data: { expiredAt: new Date }
+        })
+        const user = tempHash.user;
+
         const token = sign({ id: Number(user.id) }, env('JWT_SECRET'), { expiresIn: '100 days'})
         if (!user.tiliaId) {
             const tiliaId = await TiliaService.registerUser(user);
             await UserEntityService.update(user, { tiliaId });
         }
-        return convertUnserializable({...userResponse(user), token});
+        return {
+            session: webSessionResponse(user),
+            token,
+        };
     },
     me: async (req: AuthRequest) => {
         const user = await prisma.user.findFirstOrThrow({
@@ -127,6 +165,10 @@ export const AuthController = {
             }
         })
         return sessionResponse(user);
+    },
+    meWeb: async (req: AuthRequest) => {
+        const user = req.user;
+        return webSessionResponse(user);
     },
     getTempHash: async (req: AuthRequest) => {
         const user = req.user;

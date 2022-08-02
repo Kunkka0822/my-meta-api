@@ -19,3 +19,8 @@ export const sessionResponse = (user: UserProfile) => {
         travel: userProfile.userTravel
     }
 }
+
+export const webSessionResponse = (user: User) => ({
+    id: user.id.toString(),
+    name: user.name
+})
