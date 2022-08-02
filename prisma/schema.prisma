@@ -114,4 +114,6 @@ model TempHash {
 model TokenProduct {
   id BigInt @id @default(autoincrement())
   amount Int
+  price Int
+  currency String
 }
