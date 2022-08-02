@@ -13,11 +13,8 @@ export const ParcelQuerySchema: Schema = {
 export const ParcelRetrieveSchema: Schema = {
     ...RetrieveQuerySchema
 }
-export const ParcelBoughtSchema: Schema = {
-    ...RetrieveQuerySchema,
-    ownerAddress: {
-        in: ['body']
-    }
+export const ParcelBuySchema: Schema = {
+    ...RetrieveQuerySchema
 }
 export const ParcelsByHandleSchema: Schema = {
     handleIds: {

@@ -22,7 +22,10 @@ model Parcel {
   ownerId BigInt?
   contractAddress String?
   tokenId String?
+  latlng String?
   status PropertyStatus @default(UNMINTED)
+  CreatedBy User? @relation(fields: [createdBy], references: [id], name: "CreatedParcels")
+  createdBy BigInt?
 }
 enum PropertyStatus {
   UNMINTED
@@ -32,14 +35,66 @@ enum PropertyStatus {
 }
 model User {
   id BigInt @id @default(autoincrement())
-  wallet String
-  username String
+  chainAccount String
+  coupon String
   email String
+  invites Int @default(0)
+  isReferral Boolean @default(false)
+  lineNumber Int
+  miles Float @default(0)
+  milesMax Float @default(500)
+  name String
+  online Boolean
   password String
+  rank Int
+  speed Float
+  MMC Int @default(0)
+  tiliaId String?
+
+  
+  userOnline UserOnline?
+  userSkin UserSkin?
+  userTravel UserTravel?
+  createdParcels Parcel[] @relation(name: "CreatedParcels")
+
   key Key?
   parcels Parcel[]
   tempHashes TempHash[]
 }
+
+model UserOnline {
+  id BigInt @id @default(autoincrement())
+  loc0 Float
+  loc1 Float
+  state String
+  user User @relation(fields: [userId], references: [id])
+  userId BigInt @unique
+}
+
+model UserSkin {
+  id BigInt @id @default(autoincrement())
+  color Int
+  hat Int
+  shoes Int
+  torso Int
+  user User @relation(fields: [userId], references: [id])
+  userId BigInt @unique
+}
+
+model UserTravel {
+  id BigInt @id @default(autoincrement())
+  dateEnd Int @default(0)
+  dateStart Int @default(0)
+  distance Float @default(0)
+  gasStart Float @default(0)
+  isTravel Int @default(0)
+  loc0 String
+  loc1 String
+  speed Float
+  user User @relation(fields: [userId], references: [id])
+  userId BigInt @unique
+}
+
 model Key {
   id BigInt @id @default(autoincrement())
   user User @relation(fields: [userId], references: [id])
@@ -54,4 +109,9 @@ model TempHash {
   hash String
   expiredAt DateTime
   createdAt DateTime
+}
+
+model TokenProduct {
+  id BigInt @id @default(autoincrement())
+  amount Int
 }

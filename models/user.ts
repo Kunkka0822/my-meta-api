@@ -1,7 +1,21 @@
-import { User } from "@prisma/client";
+import { User, UserOnline, UserSkin, UserTravel } from "@prisma/client";
 import _ from "lodash";
 import { convertUnserializable } from ".";
 
+type UserProfile = User & {
+    userOnline?: UserOnline,
+    userSkin?: UserSkin,
+    userTravel?: UserTravel
+}
 export const userResponse = (user: User) => {
-    return _.omit(convertUnserializable(user), 'password')
+    return _.omit(convertUnserializable(user), 'password');
+};
+export const sessionResponse = (user: UserProfile) => {
+    const userProfile = _.omit(convertUnserializable(user), 'password');
+    return {
+        main: _.omit(userProfile, 'userOnline', 'userSkin', 'userTravel'),
+        online: userProfile.userOnline,
+        skin: userProfile.userSkin,
+        travel: userProfile.userTravel
+    }
 }

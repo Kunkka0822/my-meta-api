@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `User` ADD COLUMN `tiliaId` VARCHAR(191) NULL;
