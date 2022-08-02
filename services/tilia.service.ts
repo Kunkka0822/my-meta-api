@@ -1,9 +1,11 @@
-import { User } from "@prisma/client";
+import { TokenPurchase, User } from "@prisma/client";
 import axios from "axios";
 import { env } from "../lib/helpers/env";
 import { faker } from '@faker-js/faker';
 import { ControllerError } from "../lib/exceptions/controller_exception";
+import { TokenPurchaseService } from "../services/tokenPurchase.service";
 
+export const MMC_CURRENCY = 'MMT';
 
 const getApiUrl = (pref: string) => {
     const environment = env('NODE_ENV') === 'production' ? '' : 'staging';
@@ -94,12 +96,58 @@ const tosCheck = async (user: User) => {
     }
 }
 
-
+const initialTokenPurchase = async (tokenPurchase: TokenPurchase & { buyer: User }) => {
+    try {
+        const token = await getAccessToken('write_tokens');
+        const result = await axios.post(getApiUrl('invoicing') + `/v2/token/purchase`, {
+            payment_method_id: tokenPurchase.paymentMethodId,
+            amount: tokenPurchase.amount,
+            currency: MMC_CURRENCY,
+            destination_account_id: tokenPurchase.buyer.tiliaId
+        }, {
+            headers: {
+                Authoization: 'Bearer ' + token
+            }
+        });
+        const { data } = result;
+        await TokenPurchaseService.update(tokenPurchase, {
+            tokenExchangeId: data.token_exchange_id,
+            invoiceId: data.invoice_id,
+            status: data.status
+        })
+    } catch (e) {
+        console.log(e);
+        await TokenPurchaseService.update(tokenPurchase, {
+            status: 'Failure',
+            errorReason: e.message
+        })
+        throw new ControllerError('Tilia Token purchase failed');
+    }
+}
+const executeTokenPurchase = async (tokenPurchase: TokenPurchase) => {
+    try {
+        const token = await getAccessToken('write_tokens');
+        const result = await axios.post(getApiUrl('invoicing') + `/v2/token/purchase/${tokenPurchase.tokenExchangeId}`, {}, {
+            headers: {
+                Authoization: 'Bearer ' + token
+            }
+        });
+        const { data } = result;
+        await TokenPurchaseService.update(tokenPurchase, {
+            status: data.payload.status
+        });
+    } catch (e) {
+        console.log(e);
+        throw new ControllerError('Finalize Token Purchase failed')
+    }
+}
 export const TiliaService = {
     getApiUrl,
     getAccessToken,
     registerUser,
     getUserWallets,
     authorizeUser,
-    tosCheck
+    tosCheck,
+    initialTokenPurchase,
+    executeTokenPurchase
 }

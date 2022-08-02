@@ -60,6 +60,8 @@ model User {
   key Key?
   parcels Parcel[]
   tempHashes TempHash[]
+
+  tokenPurchases TokenPurchase[]
 }
 
 model UserOnline {
@@ -116,4 +118,18 @@ model TokenProduct {
   amount Int
   price Int
   currency String
+}
+
+model TokenPurchase {
+  id BigInt @id @default(autoincrement())
+  amount Int
+  price Int
+  currency String
+  buyerId BigInt?
+  buyer User? @relation(fields: [buyerId], references: [id])
+  paymentMethodId String?
+  tokenExchangeId String?
+  invoiceId String?
+  status String @default("INIT")
+  errorReason String?
 }
