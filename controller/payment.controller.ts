@@ -1,7 +1,11 @@
-import { TokenPurchaseStep1Request } from "../lib/types/tokenPurchase.type";
+import {
+  TokenPurchaseStep1Request,
+  TokenPurchaseStep2Request,
+} from "../lib/types/tokenPurchase.type";
 import { AuthRequest } from "../lib/types/user.types";
 import { prisma } from "../models";
 import { TiliaService } from "../services/tilia.service";
+import { TokenPurchaseService } from "../services/tokenPurchase.service";
 
 export const PaymentController = {
   tokenPurchaseStep1: async (req: AuthRequest) => {
@@ -25,6 +29,24 @@ export const PaymentController = {
       redirect,
       tokenPurchaseId: tokenPurchase.id.toString(),
     };
+  },
+  tokenPurchaseStep2: async (req: AuthRequest) => {
+    const user = req.user;
+    const data = req.body as TokenPurchaseStep2Request;
+    const tokenPurchase = await prisma.tokenPurchase.findFirstOrThrow({
+      where: {
+        id: Number(data.tokenPurchaseId),
+        buyerId: user.id,
+      },
+      include: {
+        buyer: true,
+      },
+    });
+    await TokenPurchaseService.update(tokenPurchase, {
+      paymentMethodId: data.paymentMethodId,
+    });
+    await TiliaService.initialTokenPurchase(tokenPurchase);
+    await TiliaService.executeTokenPurchase(tokenPurchase);
   },
   getRedirectUrl: async (req: AuthRequest) => {
     const user = req.user;
