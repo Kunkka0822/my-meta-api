@@ -22,10 +22,12 @@ model Parcel {
   ownerId BigInt?
   contractAddress String?
   tokenId String?
-  latlng String?
+  longlat String?
   status PropertyStatus @default(UNMINTED)
   CreatedBy User? @relation(fields: [createdBy], references: [id], name: "CreatedParcels")
   createdBy BigInt?
+  regionCode String?
+  countryCode String?
 }
 enum PropertyStatus {
   UNMINTED

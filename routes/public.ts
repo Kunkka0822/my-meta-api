@@ -1,3 +1,4 @@
+import { TokenProductController } from "../controller/tokenProduct.controller";
 import { Route } from ".";
 import { ParcelController } from "../controller/parcel.controller";
 import validate from "../middleware/validate"
@@ -22,6 +23,11 @@ const routes: Route[] = [
         path: '/api/parcel_by_handle',
         middleware: [validate(ParcelsByHandleSchema)],
         handler: ParcelController.getByHandle
+    }, {
+        name: 'Get Token Products',
+        method: 'get',
+        path: '/api/token_products',
+        handler: TokenProductController.get
     }
 ]
 export default routes;

@@ -8,6 +8,8 @@ import { parcelResponse } from "../models/parcel";
 import { ParcelSaleService } from "../services/parcel.sale.service";
 import { AuthRequest } from "../lib/types/user.types";
 import { ParcelEntityService } from "../services/parcel.entity.service";
+import MapboxGeoService from "../services/mapbox.geo.service";
+import { faker } from "@faker-js/faker";
 
 export const ParcelController = {
     retrieve: async (req: Request) => {
@@ -24,19 +26,20 @@ export const ParcelController = {
         const user = req.user;
         
         let parcel = await prisma.parcel.findFirst({ where: { handleId: id }, include: { owner: true } });
+        console.log({ parcel })
         if (!parcel) {
             const data = req.query;
             if (!data 
-                || !data.address 
-                || data.address === 'null' 
+                || !data.longlat 
+                || data.longlat === 'null' 
                 || !data.square 
-                || data.square === 'null' 
-                || !data.latlng 
-                || data.latlng === 'null') {
+                || data.square === 'null') {
                 throw new ControllerError('Not found');
             }
-            const { address, square, latlng } = data;
-            
+            const { square, longlat } = data;
+            const { regionCode, place, countryCode } = await MapboxGeoService.getAddress(longlat as string);
+            const address = place + ' ' + faker.random.numeric(5);
+
             parcel = await prisma.parcel.create({
                 data: {
                     image: 'https://mymeta.dev.playmymeta.app/images/parcel.png',
@@ -47,7 +50,9 @@ export const ParcelController = {
                     handleId: id,
                     status: PropertyStatus.UNMINTED,
                     createdBy: user.id,
-                    latlng: latlng as string
+                    longlat: longlat as string,
+                    regionCode,
+                    countryCode
                 },
                 include: {
                     owner: true
