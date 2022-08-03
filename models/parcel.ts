@@ -1,12 +1,14 @@
 import { Parcel, User } from "@prisma/client";
-import _ from "lodash";
-import { userResponse } from "./user";
 import { convertUnserializable } from ".";
+import { userResponse } from "./user";
 
 type ParcleWithOwner = Parcel & {
-    owner?: User
-}
+  owner?: User | null;
+};
 
 export const parcelResponse = (parcel: ParcleWithOwner) => {
-    return convertUnserializable({...parcel, owner: userResponse(parcel.owner)});
-}
+  return convertUnserializable({
+    ...parcel,
+    owner: userResponse(parcel.owner),
+  });
+};

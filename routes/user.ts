@@ -7,6 +7,7 @@ import { authorizeTempHash } from "../middleware/authorizeTempHash";
 import { ParcelController } from "../controller/parcel.controller";
 import { ParcelBuySchema, ParcelRetrieveSchema } from "./validation/parcel";
 import { PaymentController } from "../controller/payment.controller";
+import { TokenPurchaseStep1Schema } from "./validation/tokenPurchase";
 
 
 const routes: Route[] = [
@@ -97,11 +98,11 @@ const routes: Route[] = [
         middleware: [authorizeUser(), validate(ParcelRetrieveSchema)],
         handler: ParcelController.cancelOnSale
     }, {
-        name: 'Tilia Auth Redirect Url',
-        method: 'get',
-        path: '/api/tilia/auth_url',
-        middleware: [authorizeUser()],
-        handler: PaymentController.getRedirectUrl
+        name: 'Purchase Token Step 1',
+        method: 'post',
+        path: '/api/purchase_token/step1',
+        middleware: [authorizeUser(), validate(TokenPurchaseStep1Schema)],
+        handler: PaymentController.tokenPurchaseStep1
     }
 ]
 export default routes;
