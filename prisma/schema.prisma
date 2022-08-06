@@ -28,6 +28,10 @@ model Parcel {
   createdBy BigInt?
   regionCode String?
   countryCode String?
+
+  parcelPurchases ParcelPurchase[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }
 enum PropertyStatus {
   UNMINTED
@@ -52,7 +56,9 @@ model User {
   speed Float
   MMC Int @default(0)
   tiliaId String?
-
+  role Role @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
   
   userOnline UserOnline?
   userSkin UserSkin?
@@ -64,6 +70,12 @@ model User {
   tempHashes TempHash[]
 
   tokenPurchases TokenPurchase[]
+  ParcelSolds ParcelPurchase[] @relation(name: "ParcelSolds")
+  parcelBoughts ParcelPurchase[] @relation(name: "ParcelBoughts")
+}
+enum Role {
+  USER
+  ADMIN
 }
 
 model UserOnline {
@@ -73,6 +85,8 @@ model UserOnline {
   state String
   user User @relation(fields: [userId], references: [id])
   userId BigInt @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }
 
 model UserSkin {
@@ -83,6 +97,8 @@ model UserSkin {
   torso Int
   user User @relation(fields: [userId], references: [id])
   userId BigInt @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }
 
 model UserTravel {
@@ -97,6 +113,8 @@ model UserTravel {
   speed Float
   user User @relation(fields: [userId], references: [id])
   userId BigInt @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }
 
 model Key {
@@ -104,6 +122,8 @@ model Key {
   user User @relation(fields: [userId], references: [id])
   userId BigInt @unique
   pkey String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }
 
 model TempHash {
@@ -112,7 +132,7 @@ model TempHash {
   userId BigInt
   hash String
   expiredAt DateTime
-  createdAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model TokenProduct {
@@ -120,6 +140,8 @@ model TokenProduct {
   amount Int
   price Int
   currency String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }
 
 model TokenPurchase {
@@ -134,4 +156,29 @@ model TokenPurchase {
   invoiceId String?
   status String @default("INIT")
   errorReason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model ParcelPurchase {
+  id BigInt @id @default(autoincrement())
+  amount Int
+  fee Int
+  currency String
+  buyerId BigInt?
+  buyer User? @relation(fields: [buyerId], references: [id], name: "ParcelBoughts")
+  sellerId BigInt?
+  seller User? @relation(fields: [sellerId], references: [id], name: "ParcelSolds")
+  parcelId BigInt
+  parcel Parcel @relation(fields: [parcelId], references: [id])
+  invoiceId String?
+  status PurchaseStatus @default(INIT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+enum PurchaseStatus {
+  INIT
+  SUCCESS
+  FAILURE
 }

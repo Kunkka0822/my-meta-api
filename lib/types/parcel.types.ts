@@ -2,23 +2,23 @@ import { Parcel } from "@prisma/client";
 import { PagerQuery } from "./common.types";
 
 export interface ParcelRequest {
-    handleId: string;
-    image: string;
-    address: string;
-    square: number;
-    price: number;
-    ownerAddress: string;
-    contractAddress: string;
-    tokenId: string;
-    onSale: boolean;
+  handleId: string;
+  image: string;
+  address: string;
+  square: number;
+  price: number;
+  ownerAddress: string;
+  contractAddress: string;
+  tokenId: string;
+  onSale: boolean;
 }
 
 export interface ParcelsByHandleQuery {
-    handleIds: string[]
+  handleIds: string[];
 }
 
-export interface ParcelBoughtRequest {
-    ownerAddress: string
+export interface ParcelOnSaleRequest {
+  price: number;
 }
 export interface ParcelQuery extends PagerQuery {}
 

@@ -6,9 +6,15 @@ type ParcleWithOwner = Parcel & {
   owner?: User | null;
 };
 
-export const parcelResponse = (parcel: ParcleWithOwner) => {
-  return convertUnserializable({
-    ...parcel,
-    owner: userResponse(parcel.owner),
-  });
+export const parcelResponse = (
+  parcel: ParcleWithOwner | ParcleWithOwner[]
+): any => {
+  if (Array.isArray(parcel)) {
+    return parcel.map((item) => parcelResponse(item));
+  } else {
+    return convertUnserializable({
+      ...parcel,
+      owner: userResponse(parcel.owner),
+    });
+  }
 };

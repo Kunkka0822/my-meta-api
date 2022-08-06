@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `ParcelPurchase` ADD COLUMN `status` ENUM('INIT', 'SUCCESS', 'FAILURE') NOT NULL DEFAULT 'INIT';

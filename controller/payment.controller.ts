@@ -5,7 +5,7 @@ import {
 import { AuthRequest } from "../lib/types/user.types";
 import { prisma } from "../models";
 import { TiliaService } from "../services/tilia.service";
-import { TokenPurchaseService } from "../services/tokenPurchase.service";
+import { TokenPurchaseEntityService } from "../services/tokenPurchase.entity.service";
 
 export const PaymentController = {
   tokenPurchaseStep1: async (req: AuthRequest) => {
@@ -42,7 +42,7 @@ export const PaymentController = {
         buyer: true,
       },
     });
-    await TokenPurchaseService.update(tokenPurchase, {
+    await TokenPurchaseEntityService.update(tokenPurchase, {
       paymentMethodId: data.paymentMethodId,
     });
     await TiliaService.initialTokenPurchase(tokenPurchase);

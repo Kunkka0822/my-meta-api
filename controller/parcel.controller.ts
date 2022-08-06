@@ -4,7 +4,7 @@ import { Request } from "express";
 import { ControllerError } from "../lib/exceptions/controller_exception";
 import { sanitizePager } from "../lib/helpers/utils";
 import {
-  ParcelBoughtRequest,
+  ParcelOnSaleRequest,
   ParcelQuery,
   ParcelsByHandleQuery,
 } from "../lib/types/parcel.types";
@@ -14,6 +14,7 @@ import { parcelResponse } from "../models/parcel";
 import MapboxGeoService from "../services/mapbox.geo.service";
 import { ParcelEntityService } from "../services/parcel.entity.service";
 import { ParcelSaleService } from "../services/parcel.sale.service";
+import { UserEntityService } from "../services/user.entity.service";
 
 export const ParcelController = {
   retrieve: async (req: Request) => {
@@ -22,7 +23,10 @@ export const ParcelController = {
       where: { id },
       include: { owner: true },
     });
-    if (parcel === null) throw new ControllerError("Not Found", 404);
+    if (!parcel.owner) {
+      const admin = await UserEntityService.getAdmin();
+      parcel.owner = admin;
+    }
     return parcelResponse(parcel);
   },
 
@@ -35,7 +39,6 @@ export const ParcelController = {
       where: { handleId: id },
       include: { owner: true },
     });
-    console.log({ parcel });
     if (!parcel) {
       const data = req.query;
       if (
@@ -71,6 +74,10 @@ export const ParcelController = {
         },
       });
     }
+    if (!parcel.owner) {
+      const admin = await UserEntityService.getAdmin();
+      parcel.owner = admin;
+    }
     return parcelResponse(parcel);
   },
   makeOnSale: async (req: AuthRequest) => {
@@ -83,7 +90,11 @@ export const ParcelController = {
     if (parcel.status === PropertyStatus.SECURING) {
       throw new ControllerError("Now securing ownership");
     }
-    await ParcelEntityService.update(parcel, { status: PropertyStatus.ONSALE });
+    const data = req.body as ParcelOnSaleRequest;
+    await ParcelEntityService.update(parcel, {
+      status: PropertyStatus.ONSALE,
+      price: data.price,
+    });
     return parcelResponse(parcel);
   },
   cancelOnSale: async (req: AuthRequest) => {
@@ -108,7 +119,7 @@ export const ParcelController = {
       },
       include: { owner: true },
     });
-    return parcels.map((parcel) => parcelResponse(parcel));
+    return parcelResponse(parcels);
   },
   get: async (req: Request) => {
     const { page, size } = sanitizePager(req.query as ParcelQuery);
@@ -117,12 +128,11 @@ export const ParcelController = {
       skip: (page - 1) * size,
       include: { owner: true },
     });
-    return parcels.map((parcel) => parcelResponse(parcel));
+    return parcelResponse(parcels);
   },
   buy: async (req: AuthRequest) => {
     const id = parseInt(req.params.id);
     const user = req.user;
-    const data = req.body as ParcelBoughtRequest;
     let parcel = await prisma.parcel.findFirstOrThrow({
       where: { id },
       include: { owner: true },
@@ -141,5 +151,14 @@ export const ParcelController = {
       await ParcelSaleService.buy(parcel, user);
     }
     return parcelResponse(parcel);
+  },
+  retrieveMyParcels: async (req: AuthRequest) => {
+    const user = req.user;
+    const parcels = await prisma.parcel.findMany({
+      where: {
+        ownerId: user.id,
+      },
+    });
+    return parcelResponse(parcels);
   },
 };

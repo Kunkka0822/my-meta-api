@@ -1,81 +1,149 @@
-import { Parcel, PropertyStatus, User } from "@prisma/client";
+import { Parcel, PropertyStatus, PurchaseStatus, User } from "@prisma/client";
 import { ControllerError } from "../lib/exceptions/controller_exception";
-import { ParcelData } from "../lib/types/parcel.types";
+import { env } from "../lib/helpers/env";
 import { prisma } from "../models";
 import { ParcelEntityService } from "../services/parcel.entity.service";
-import { UserSaleService } from "../services/user.sale.service";
+import { ParclePurchaseEntityService } from "./parcelPurchase.entity.service";
+import { MMC_CURRENCY, TiliaService } from "./tilia.service";
 
 const buy = async (parcel: Parcel, user: User) => {
   if (parcel.price === null) throw new ControllerError("Price is null");
   if (parcel.ownerId === null) throw new ControllerError("Owner is null");
-  if (user.MMC < parcel.price) {
-    throw new ControllerError("Not Enough Balance");
-  }
-  const owner = await prisma.user.findFirstOrThrow({
-    where: { id: parcel.ownerId },
-  });
-  if (!owner) {
-    return mint(parcel, user);
-  }
-
   if (parcel.status !== PropertyStatus.ONSALE) {
     throw new ControllerError("This parcel is not on sale");
   }
-  await UserSaleService.burnMMC(user, parcel.price);
-  await ParcelEntityService.update(parcel, { status: PropertyStatus.SECURING });
+  const oldStatus = parcel.status;
 
-  /**
-   * TODO transfer token to owner from user
-   * if success
-   * this.updateOwner(parcel, user)
-   */
+  try {
+    await ParcelEntityService.update(parcel, {
+      status: PropertyStatus.SECURING,
+    });
+    const owner = await prisma.user.findFirst({
+      where: { id: parcel.ownerId },
+    });
 
-  // Temporary
-  setTimeout(async () => {
-    if (parcel.price === null) throw new ControllerError("Price is null");
-    await UserSaleService.transferMMC(owner, parcel.price);
+    if (!owner) {
+      throw new ControllerError("There's no owner");
+    }
+
+    // Check balance
+    const { mmcSpendable } = await TiliaService.getUserBalances(user);
+    if (mmcSpendable < parcel.price) {
+      throw new ControllerError("Not Enough Balance");
+    }
+
+    // calculate fee
+    const feeRate = env("TRANSACTION_FEE_RATE");
+    const fee = Math.round(parcel.price * parseFloat(feeRate));
+
+    const parcelPurchase = await prisma.parcelPurchase.create({
+      data: {
+        amount: parcel.price,
+        fee,
+        currency: MMC_CURRENCY,
+        buyerId: user.id,
+        sellerId: owner.id,
+        parcelId: parcel.id,
+      },
+    });
+
+    // transfer token to seller from buyer
+    const invoiceData = {
+      account_id: user.tiliaId,
+      invoice_type: "user_purchase_virtual",
+      reference_type: "parcel_purchase_id",
+      reference_id: parcelPurchase.id.toString(),
+      description: `${user.name} bought parcel from ${owner.name}`,
+      line_items: [
+        {
+          amount: parcel.price,
+          currency: MMC_CURRENCY,
+          description: `Parcel Address: ${parcel.address}`,
+          transaction_type: "user_to_user",
+          recipients: [
+            {
+              amount: parcel.price - fee,
+              currency: MMC_CURRENCY,
+              description: `${owner.name} got by selling parcel: ${parcel.address}`,
+              destination_account_id: owner.tiliaId,
+            },
+            {
+              amount: fee,
+              currency: MMC_CURRENCY,
+              description: `Admin collect fee from the transaction of parcel: ${parcel.address}`,
+              destination_account_id: owner.tiliaId,
+            },
+          ],
+        },
+      ],
+    };
+    const invoiceId = await TiliaService.processInvoice(invoiceData);
+    await ParclePurchaseEntityService.update(parcelPurchase, {
+      invoiceId,
+      status: PurchaseStatus.SUCCESS,
+    });
+
     await ParcelEntityService.update(parcel, {
       ownerAddress: user.chainAccount,
       ownerId: user.id,
       status: PropertyStatus.OWNED,
     });
-  }, 10000);
+  } catch (e) {
+    await ParcelEntityService.update(parcel, { status: oldStatus });
+    throw e;
+  }
 };
 const mint = async (parcel: Parcel, user: User) => {
   if (parcel.price === null) throw new ControllerError("Price is null");
-  if (user.MMC < parcel.price) {
-    throw new ControllerError("Not enough token");
-  }
   if (parcel.status !== PropertyStatus.UNMINTED)
     throw new ControllerError("This is already minted");
-  await ParcelEntityService.update(parcel, { status: PropertyStatus.SECURING });
-  await UserSaleService.burnMMC(user, parcel.price);
-  /**
-   * TODO transfer token to owner from user
-   * ...
-   * if success
-   * this.updateOwner(parcel, user);
-   */
-  setTimeout(async () => {
+  const oldStatus = parcel.status;
+  try {
+    await ParcelEntityService.update(parcel, {
+      status: PropertyStatus.SECURING,
+    });
+
+    const parcelPurchase = await prisma.parcelPurchase.create({
+      data: {
+        amount: parcel.price,
+        fee: 0,
+        currency: MMC_CURRENCY,
+        buyerId: user.id,
+        parcelId: parcel.id,
+      },
+    });
+    const invoiceData = {
+      account_id: user.tiliaId,
+      invoice_type: "user_purchase_virtual",
+      reference_type: "parcel_purchase_id",
+      reference_id: parcelPurchase.id,
+      description: `${user.name} mint parcel`,
+      line_items: [
+        {
+          amount: parcel.price,
+          currency: MMC_CURRENCY,
+          description: `Parcel Address: ${parcel.address}`,
+          transaction_type: "user_to_integrator",
+        },
+      ],
+    };
+    const invoiceId = await TiliaService.processInvoice(invoiceData);
+    await ParclePurchaseEntityService.update(parcelPurchase, {
+      invoiceId,
+      status: PurchaseStatus.SUCCESS,
+    });
     await ParcelEntityService.update(parcel, {
       ownerAddress: user.chainAccount,
       ownerId: user.id,
       status: PropertyStatus.OWNED,
     });
-  }, 10000);
-};
-const updateParcel = async (parcel: Parcel, data: ParcelData) => {
-  const updated = await prisma.parcel.update({
-    where: {
-      id: parcel.id,
-    },
-    data,
-  });
-  Object.assign(parcel, updated);
+  } catch (e) {
+    await ParcelEntityService.update(parcel, { status: oldStatus });
+    throw e;
+  }
 };
 
 export const ParcelSaleService = {
   buy,
   mint,
-  updateParcel,
 };

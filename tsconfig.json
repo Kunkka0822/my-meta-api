@@ -9,7 +9,7 @@
     "outDir": "dist",
     "paths": {
       "*": [
-        "node_modules/*"
+        "./node_modules/*"
       ]
     },
     "typeRoots": [

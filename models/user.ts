@@ -15,12 +15,12 @@ export type BalancesType = {
 };
 export const userResponse = (user?: User | null) => {
   if (!user) return user;
-  return _.omit(convertUnserializable(user), "password");
+  return _.omit(convertUnserializable(user), "password", "role");
 };
 export const sessionResponse = (user: UserProfile, balances: BalancesType) => {
   const userProfile = _.omit(convertUnserializable(user), "password");
   return {
-    main: _.omit(userProfile, "userOnline", "userSkin", "userTravel"),
+    main: _.omit(userProfile, "userOnline", "userSkin", "userTravel", "role"),
     online: userProfile.userOnline,
     skin: userProfile.userSkin,
     travel: userProfile.userTravel,
