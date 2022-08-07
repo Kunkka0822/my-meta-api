@@ -75,6 +75,7 @@ export const ParcelController = {
   },
   makeOnSale: async (req: AuthRequest) => {
     const id = req.params.id;
+    const price = Number(req.query.price);
     const user = req.user;
     let parcel = await prisma.parcel.findFirst({
       where: { id: parseInt(id), ownerId: user.id },
@@ -83,7 +84,10 @@ export const ParcelController = {
     if (parcel.status === PropertyStatus.SECURING) {
       throw new ControllerError("Now securing ownership");
     }
-    await ParcelEntityService.update(parcel, { status: PropertyStatus.ONSALE });
+    await ParcelEntityService.update(parcel, {
+      status: PropertyStatus.ONSALE,
+      price,
+    });
     return parcelResponse(parcel);
   },
   cancelOnSale: async (req: AuthRequest) => {

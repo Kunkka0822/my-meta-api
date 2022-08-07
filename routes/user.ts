@@ -4,7 +4,11 @@ import { ParcelController } from "../controller/parcel.controller";
 import { PaymentController } from "../controller/payment.controller";
 import { authorizeUser } from "../middleware/authorizeUser";
 import validate from "../middleware/validate";
-import { ParcelBuySchema, ParcelRetrieveSchema } from "./validation/parcel";
+import {
+  ParcelBuySchema,
+  ParcelRetrieveSchema,
+  ParcelsMakeSaleSchema,
+} from "./validation/parcel";
 import {
   TokenPurchaseStep1Schema,
   TokenPurchaseStep2Schema,
@@ -104,7 +108,7 @@ const routes: Route[] = [
     name: "Make on sale",
     method: "put",
     path: "/api/parcel/:id/onsale",
-    middleware: [authorizeUser(), validate(ParcelRetrieveSchema)],
+    middleware: [authorizeUser(), validate(ParcelsMakeSaleSchema)],
     handler: ParcelController.makeOnSale,
   },
   {
