@@ -56,6 +56,13 @@ const routes: Route[] = [
     handler: ParcelController.retrieveMyParcels,
   },
   {
+    name: "My Kyc Status",
+    method: "get",
+    path: "/api/me/tilia_kyc_status",
+    middleware: [authorizeUser()],
+    handler: AuthController.getKycStatus,
+  },
+  {
     name: "Me",
     method: "get",
     path: "/api/me",

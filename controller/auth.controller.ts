@@ -209,4 +209,9 @@ export const AuthController = {
     });
     return { hash: tempHash.hash };
   },
+  getKycStatus: async (req: AuthRequest) => {
+    const user = req.user;
+    const status = await TiliaService.checkKycStatus(user);
+    return { status };
+  },
 };

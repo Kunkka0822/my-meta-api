@@ -8,6 +8,14 @@ import { TokenPurchaseEntityService } from "./tokenPurchase.entity.service";
 
 export const MMC_CURRENCY = env("MMC_CURRENCY");
 
+export enum KYCStatus {
+  NODATA = "NODATA",
+  ACCEPT = "ACCEPT",
+  DENY = "DENY",
+  MANUAL_REVIEW = "MANUAL_REVIEW",
+  REVERIFY = "REVERIFY",
+}
+
 const getApiUrl = (pref: string) => {
   const environment = env("NODE_ENV") === "production" ? "" : "staging";
   return "https://" + pref + "." + environment + ".tilia-inc.com";
@@ -258,6 +266,23 @@ const processInvoice = async (invoiceData: any) => {
     throw new ControllerError("Transaction failed");
   }
 };
+const checkKycStatus = async (user: User) => {
+  try {
+    const token = await getAccessToken("read_kycs");
+    const result = await axios.get(
+      getApiUrl("pii") + `/v1/kyc/${user.tiliaId}`,
+      {
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      }
+    );
+    return result.data.payload.state;
+  } catch (e) {
+    console.error(e);
+    throw new ControllerError("Check Status failed");
+  }
+};
 
 export const TiliaService = {
   getApiUrl,
@@ -270,4 +295,5 @@ export const TiliaService = {
   initialTokenPurchase,
   executeTokenPurchase,
   processInvoice,
+  checkKycStatus,
 };
