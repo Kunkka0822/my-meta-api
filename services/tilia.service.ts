@@ -4,7 +4,6 @@ import axios from "axios";
 import { ControllerError } from "../lib/exceptions/controller_exception";
 import { env } from "../lib/helpers/env";
 import { BalancesType } from "../models/user";
-import { TokenPurchaseEntityService } from "./tokenPurchase.entity.service";
 
 export const MMC_CURRENCY = env("MMC_CURRENCY");
 
@@ -98,30 +97,31 @@ const getUserBalances = async (user: User): Promise<BalancesType> => {
         0
       );
 
-    const mmcConvertibleBalance = data
-      .filter(
-        (item: any) =>
-          item.processing_currency === MMC_CURRENCY &&
-          item.method_class === "convertible"
-      )
-      .reduce(
-        (sum: number, current: any) => sum + parseInt(current.wallet_balance),
-        0
-      );
-    const mmcSpendableBalance = data
-      .filter(
-        (item: any) =>
-          item.processing_currency === MMC_CURRENCY &&
-          item.method_class !== "convertible"
-      )
-      .reduce(
-        (sum: number, current: any) => sum + parseInt(current.wallet_balance),
-        0
-      );
+    // const mmcConvertibleBalance = data
+    //   .filter(
+    //     (item: any) =>
+    //       item.processing_currency === MMC_CURRENCY &&
+    //       item.method_class === "convertible"
+    //   )
+    //   .reduce(
+    //     (sum: number, current: any) => sum + parseInt(current.wallet_balance),
+    //     0
+    //   );
+    // const mmcSpendableBalance = data
+    //   .filter(
+    //     (item: any) =>
+    //       item.processing_currency === MMC_CURRENCY &&
+    //       item.method_class !== "convertible"
+    //   )
+    //   .reduce(
+    //     (sum: number, current: any) => sum + parseInt(current.wallet_balance),
+    //     0
+    //   );
+
     return {
       usd: usdBalance || 0,
-      mmcConvertible: mmcConvertibleBalance || 0,
-      mmcSpendable: mmcSpendableBalance || 0,
+      mmcConvertible: 0, // mmcConvertibleBalance || 0,
+      mmcSpendable: user.MMC, // mmcSpendableBalance || 0,
     };
   } catch (e) {
     console.log(e.response.data);
@@ -172,62 +172,88 @@ const tosCheck = async (user: User) => {
   }
 };
 
-const initialTokenPurchase = async (
+// const initialTokenPurchase = async (
+//   tokenPurchase: TokenPurchase & { buyer: User }
+// ) => {
+//   try {
+//     const token = await getAccessToken("write_tokens");
+//     const result = await axios.post(
+//       getApiUrl("invoicing") + `/v2/token/purchase`,
+//       {
+//         payment_method_id: tokenPurchase.paymentMethodId,
+//         amount: tokenPurchase.amount,
+//         currency: MMC_CURRENCY,
+//         destination_account_id: tokenPurchase.buyer.tiliaId,
+//       },
+//       {
+//         headers: {
+//           Authorization: "Bearer " + token,
+//         },
+//       }
+//     );
+//     const { data } = result;
+
+//     await TokenPurchaseEntityService.update(tokenPurchase, {
+//       tokenExchangeId: data.payload.token_exchange_id,
+//       invoiceId: data.invoice_id,
+//     });
+//   } catch (e) {
+//     console.log(e);
+//     await TokenPurchaseEntityService.update(tokenPurchase, {
+//       status: "Failure",
+//       errorReason: e.message,
+//     });
+//     throw new ControllerError("Tilia Token purchase failed");
+//   }
+// };
+// const executeTokenPurchase = async (tokenPurchase: TokenPurchase) => {
+//   try {
+//     const token = await getAccessToken("write_tokens");
+//     const result = await axios.post(
+//       getApiUrl("invoicing") +
+//         `/v2/token/purchase/${tokenPurchase.tokenExchangeId}`,
+//       undefined,
+//       {
+//         headers: {
+//           Authorization: "Bearer " + token,
+//         },
+//       }
+//     );
+//     const { data } = result;
+//     await TokenPurchaseEntityService.update(tokenPurchase, {
+//       status: data.payload.status,
+//     });
+//   } catch (e) {
+//     console.error(e);
+//     console.log(e.response?.data);
+//     throw new ControllerError("Finalize Token Purchase failed");
+//   }
+// };
+
+const purchaseToken = async (
   tokenPurchase: TokenPurchase & { buyer: User }
 ) => {
-  try {
-    const token = await getAccessToken("write_tokens");
-    const result = await axios.post(
-      getApiUrl("invoicing") + `/v2/token/purchase`,
+  const invoiceData = {
+    account_id: tokenPurchase.buyer.tiliaId,
+    reference_type: "token_purchase_id",
+    reference_id: tokenPurchase.id.toString(),
+    description: `Token purchase ${tokenPurchase.amount} at price ${tokenPurchase.price}`,
+    payment_methods: [
       {
         payment_method_id: tokenPurchase.paymentMethodId,
-        amount: tokenPurchase.amount,
-        currency: MMC_CURRENCY,
-        destination_account_id: tokenPurchase.buyer.tiliaId,
       },
+    ],
+    line_items: [
       {
-        headers: {
-          Authorization: "Bearer " + token,
-        },
-      }
-    );
-    const { data } = result;
-
-    await TokenPurchaseEntityService.update(tokenPurchase, {
-      tokenExchangeId: data.payload.token_exchange_id,
-      invoiceId: data.invoice_id,
-    });
-  } catch (e) {
-    console.log(e);
-    await TokenPurchaseEntityService.update(tokenPurchase, {
-      status: "Failure",
-      errorReason: e.message,
-    });
-    throw new ControllerError("Tilia Token purchase failed");
-  }
-};
-const executeTokenPurchase = async (tokenPurchase: TokenPurchase) => {
-  try {
-    const token = await getAccessToken("write_tokens");
-    const result = await axios.post(
-      getApiUrl("invoicing") +
-        `/v2/token/purchase/${tokenPurchase.tokenExchangeId}`,
-      undefined,
-      {
-        headers: {
-          Authorization: "Bearer " + token,
-        },
-      }
-    );
-    const { data } = result;
-    await TokenPurchaseEntityService.update(tokenPurchase, {
-      status: data.payload.status,
-    });
-  } catch (e) {
-    console.error(e);
-    console.log(e.response?.data);
-    throw new ControllerError("Finalize Token Purchase failed");
-  }
+        amount: 500,
+        currency: "USD",
+        transaction_type: "user_to_integrator",
+        reference_type: "token_product_id",
+        reference_id: tokenPurchase.tokenProductId.toString(),
+      },
+    ],
+  };
+  await processInvoice(invoiceData);
 };
 
 const processInvoice = async (invoiceData: any) => {
@@ -292,8 +318,7 @@ export const TiliaService = {
   getUserBalances,
   authorizeUser,
   tosCheck,
-  initialTokenPurchase,
-  executeTokenPurchase,
+  purchaseToken,
   processInvoice,
   checkKycStatus,
 };

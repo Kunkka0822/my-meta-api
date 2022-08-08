@@ -2,6 +2,7 @@ import { Route } from ".";
 import { AuthController } from "../controller/auth.controller";
 import { ParcelController } from "../controller/parcel.controller";
 import { PaymentController } from "../controller/payment.controller";
+import { UserController } from "../controller/user.controller";
 import { authorizeUser } from "../middleware/authorizeUser";
 import validate from "../middleware/validate";
 import {
@@ -54,6 +55,27 @@ const routes: Route[] = [
     path: "/api/me/property/parcel",
     middleware: [authorizeUser()],
     handler: ParcelController.retrieveMyParcels,
+  },
+  {
+    name: "Update My Online Status",
+    method: "put",
+    path: "/api/me/online_status",
+    middleware: [authorizeUser()],
+    handler: UserController.updateOnlineStatus,
+  },
+  {
+    name: "Update My Skin",
+    method: "put",
+    path: "/api/me/skin",
+    middleware: [authorizeUser()],
+    handler: UserController.updateSkin,
+  },
+  {
+    name: "Update My Travel",
+    method: "put",
+    path: "/api/me/travel",
+    middleware: [authorizeUser()],
+    handler: UserController.updateTravel,
   },
   {
     name: "My Kyc Status",

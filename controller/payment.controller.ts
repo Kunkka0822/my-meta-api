@@ -1,3 +1,4 @@
+import { PurchaseStatus } from "@prisma/client";
 import {
   TokenPurchaseStep1Request,
   TokenPurchaseStep2Request,
@@ -6,6 +7,7 @@ import { AuthRequest } from "../lib/types/user.types";
 import { prisma } from "../models";
 import { TiliaService } from "../services/tilia.service";
 import { TokenPurchaseEntityService } from "../services/tokenPurchase.entity.service";
+import { UserSaleService } from "../services/user.sale.service";
 
 export const PaymentController = {
   tokenPurchaseStep1: async (req: AuthRequest) => {
@@ -19,6 +21,7 @@ export const PaymentController = {
         amount: tokenProduct.amount,
         price: tokenProduct.price,
         currency: tokenProduct.currency,
+        tokenProductId: tokenProduct.id,
         buyerId: user.id,
         status: "INITIAL",
       },
@@ -45,8 +48,11 @@ export const PaymentController = {
     await TokenPurchaseEntityService.update(tokenPurchase, {
       paymentMethodId: data.paymentMethodId,
     });
-    await TiliaService.initialTokenPurchase(tokenPurchase);
-    await TiliaService.executeTokenPurchase(tokenPurchase);
+    await TiliaService.purchaseToken(tokenPurchase);
+    await TokenPurchaseEntityService.update(tokenPurchase, {
+      status: PurchaseStatus.SUCCESS,
+    });
+    await UserSaleService.transferMMC(user, tokenPurchase.amount);
   },
   getRedirectUrl: async (req: AuthRequest) => {
     const user = req.user;
